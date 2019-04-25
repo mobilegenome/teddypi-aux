@@ -223,6 +223,10 @@ def get_sequence(infile, seqname, start, stop):
     fasta = pyfaidx.Fasta(infile)  # , filt_function=lambda x: x[0] == seqname)
     print "OK."
     fasta_id = associate_taxon(basename(infile))
+
+    if stop < start:
+        start, stop = stop, start
+
     seq = fasta[seqname][start:stop]
     record = SeqRecord(Seq(seq.seq), id=fasta_id, description=seq.longname)
     if set(record) == set("N"):
