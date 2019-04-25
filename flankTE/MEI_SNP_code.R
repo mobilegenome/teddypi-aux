@@ -45,7 +45,10 @@ is.nan.data.frame <- function(x)
 load_data <- function(in_dir, start_flank = 1000, end_flank = 10000, window_size = 1000, tree_analysis = FALSE) {
   data <- list()
   for (flank_pos in as.integer(seq(from = start_flank, to = end_flank, by = window_size))) {
-    infile <- paste(in_dir,as.character(flank_pos),"sites.csv", sep="/") # non_ref_ins/4_taxa
+    infile <- paste(in_dir,as.character(flank_pos),"combined_sites.tsv", sep="/") # non_ref_ins/4_taxa
+
+#    infile <- paste(in_dir,as.character(flank_pos),"sites.csv", sep="/") # non_ref_ins/4_taxa
+    
     df.temp <- read.table(infile, header=TRUE, sep="\t", stringsAsFactors=FALSE)
     df.temp$locus <- paste(df.temp$seqname, ":", df.temp$start, "-", df.temp$stop, sep="")
     df.temp$dset <- lapply(df.temp$flank, function (x) change_flanksign(x, flank_pos))
