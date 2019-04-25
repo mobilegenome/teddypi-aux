@@ -3,6 +3,13 @@
 Scripts to extract SNPs in the flanking regions of TE insertions. 
 SNPs are extracted from whole-genome consensus sequences of the sample WGS datasets used for the TE calling analyses.
  
+
+There are two types of the scripts. 
+
+1. `flankTE-SNP.py` extract various types of SNP that support specific groupings of the samples, that need to be
+configured in the script itself. 
+2. `flankTE-tree.py` Extract SNPs that according to various branches on a species tree. 
+This also requires configuration in the script file. 
  
 ## Dependencies
 
@@ -19,8 +26,8 @@ flankTE runs on Python 2.7
 ## Usage
 
 ```bash
-python MEI_SNP_analysis.tree.py 
-usage: MEI_SNP_analysis.tree.py [-h] -i FASTA -f FLANK [-o OVERLAPPING]
+python flankTE-tree.py 
+usage: flankTE-tree.py [-h] -i FASTA -f FLANK [-o OVERLAPPING]
                                 [-w WINDOWSIZE] -m MATRIX
 ```
 
