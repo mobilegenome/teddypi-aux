@@ -1,0 +1,121 @@
+Report: SNVs in TE loci 
+========================================================
+
+Research report on the analysis of flanking regions of TE insertion loci identified using the TeddyPi pipeline. 
+
+
+ 1. Load the code 
+
+```{r, echo=FALSE}
+setwd("~/teddypi//code/")
+source('summarySE.R') # Load summarySE function
+source('multiplot.R')
+#source("~/teddypi/data/2015-12-15/MEI_SNPs_analysis/regression_eg.R") # load regression function 
+source("~/teddypi/data/2015-12-15/MEI_SNPs_analysis/del_intersect/clade_support.R") # Clade support identification
+source('MEI_SNP_code.R') # all other code
+```
+
+
+2. Load the data and store some variables
+```{r}
+genomefile <- data.frame(read.table("~/teddypi/data/reference_genome/BGI.scaf.filtered_1Mb.genome"))
+colnames(genomefile) <- c("chrom", "end")
+test_types <- vector()
+test_types["SINE"] = "/home/fritjof/teddypi/data/2017-03-09/MEI_SNP/asian/"
+
+df_collection <- list()
+for (in_dir in names(test_types)) {
+  df_collection[[in_dir]] <- load_data(test_types[[in_dir]])
+}
+element <- "SINE"
+```
+
+## Show a histogram
+
+```{r, echo=FALSE}
+df <- subset(df_collection[[element]], dset != "" & flank != "combined" , select=c("dset", "sptreeSNP", "insSNP",  "allSNP", "othSNP", "infSNP", "clade_support", "flank", "nuc_div", "avg_pd", "p1SNP", "p2SNP", "p3SNP", "p4SNP", "p5SNP", "insratio", "seg_sites", "locus"))
+plot_explore(df, element) + facet_wrap( ~ clade_support, scales="free")
+smmry <- summarySE(df, groupvars=c("flank","clade_support"), measurevar="allSNP")
+smmry$N <- smmry$N/10
+kable(smmry)
+```
+
+
+## Plot everything
+```{r, echo=FALSE, fig.width=20, fig,height=20}
+df <- subset(df_collection[[element]], dset != "" & flank != "combined" , select=c("dset", "sptreeSNP", "insratio", "seg_sites", "clade_support", "flank", "p1SNP", "p2SNP", "p3SNP", "p4SNP", "p5SNP"))
+
+df <- subset(df_collection[[element]], dset != "" & flank != "combined" , select=c("dset", "sptreeSNP", "insratio", "seg_sites", "clade_support", "flank"))
+dfm <- melt(df, id.vars=c("dset", "clade_support", "flank"))
+insSNP_summary <- summarySE(dfm,groupvars=c("dset","variable", "clade_support", "flank"), measurevar="value")
+plot_context(insSNP_summary, "SINE")
+plot_context_MS(insSNP_summary, "SINE")
+
+ggsave(paste("~/teddypi/results//MS/MEI_SNP/insratio",dset,"pdf", sep="."), device="pdf", width=8.27, height=8.27, units="in")
+```
+
+
+## Regression analysis
+```{r, echo=FALSE}
+data <- as.data.frame(matrix(ncol=4, nrow=0), stringsAsFactors=F)
+for (clade in levels(as.factor(df_collection[[element]]$clade_support)))
+  {
+    for (f in c("5prime", "3prime", "combined"))
+      {
+    
+    df <- subset(df_collection[[element]], dset != "" & flank == f & clade_support == clade, select=c("dset", "sptreeSNP", "insratio", "seg_sites", "clade_support", "flank", "p1SNP", "p2SNP", "p3SNP", "p4SNP", "p5SNP", "insSNP", "locus"))
+    
+    # elimnate effect of locus
+    df.r  <- resid(lm(insratio~locus, data=df))
+    l     <- lm(df.r ~ df$dset)
+    ls <- summary(l)
+    p.value <- ls$coefficients[2,4]
+    r2 <- ls$r.squared
+  
+    d <- list("flank" = f, "clade" = clade, "r_sqrd" = r2, "Pvalue" = p.value)
+    data <- rbind(data, d, stringsAsFactors=F)
+    }
+  }
+
+p <- ggplot(data=data, aes(x=clade, y=r_sqrd, fill=flank, group=flank))
+p + geom_bar(stat="identity", position="dodge")
+kable(data)
+library(reshape2)
+kable(dcast(data[,-4], clade ~ flank),format="rst")
+```
+
+# Manuscript plot
+
+```{r}
+df <- subset(df_collection[[element]], dset != "" & flank != "combined" , select=c("dset", "insratio", "clade_support", "flank"))
+dfm <- melt(df, id.vars=c("dset", "clade_support", "flank"))
+insSNP_summary <- summarySE(dfm,groupvars=c("dset","variable", "clade_support", "flank"), measurevar="value")
+
+plot_context_MS(insSNP_summary, "SINE")
+```
+
+## Manuscript plot - alternative topologies
+```{r}
+
+
+#dfs <- df[df$clade_support == signal, ]
+dfm <- melt(df, id.vars=c("dset", "clade_support", "flank"))
+insSNP_summary <- summarySE(dfm,groupvars=c("dset","variable", "clade_support", "flank"), measurevar="value")
+print(plot_context_alt_topologies_MS(insSNP_summary, "SINE"))
+
+
+df <- subset(df_collection[[element]], dset != "" & flank != "combined" , select=c("dset", "alt1_SNV", "alt2_SNV", "alt3_SNV", "alt4_SNV", "alt5_SNV", "clade_support", "flank"))
+head(df)
+levels(as.factor(df$clade_support))
+dfm <- melt(dfs, id.vars=c("dset", "clade_support", "flank"))
+insSNP_summary <- summarySE(dfm,groupvars=c("dset","variable", "clade_support", "flank"), measurevar="value")
+View(insSNP_summary)
+p <- plot_context_alt_topologies_MS(insSNP_summary, "SINE")
+pdf(file=paste("~/teddypi/results/MS/SupplementaryFigures/MEI_SNP_additional/alternative_topos_revA.pdf", sep=""),useDingbats=FALSE, width=11.69, height=25 ) # 3.5
+print(p)
+dev.off()
+
+
+  
+
+```
