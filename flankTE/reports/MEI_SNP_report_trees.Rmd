@@ -1,0 +1,93 @@
+Report: SNVs in TE loci: Phylogenetic analysis
+========================================================
+
+Research report on the analysis of flanking regions of TE insertion loci identified using the TeddyPi pipeline. 
+
+
+ 1. Load the code 
+
+```{r, echo=FALSE}
+setwd("~/teddypi//code/")
+source('summarySE.R') # Load summarySE function
+source('multiplot.R')
+#source("~/teddypi/data/2015-12-15/MEI_SNPs_analysis/regression_eg.R") # load regression function 
+source("~/teddypi/data/2015-12-15/MEI_SNPs_analysis/del_intersect/clade_support.R") # Clade support identification
+source('MEI_SNP_code.R') # all other code
+
+```
+
+
+2. Load the data and store some variables
+```{r}
+genomefile <- data.frame(read.table("~/teddypi/data/reference_genome/BGI.scaf.filtered_1Mb.genome"))
+colnames(genomefile) <- c("chrom", "end")
+start_flank = 10000
+end_flank = 10000
+window_size = 10000
+test_types <- vector()
+
+test_types["tree_SINE_asb_sun"] = "/home/fritjof/teddypi/data/2017-03-09/MEI_SNP/gene_trees/asb_sun/"
+test_types["tree_SINE_asb_slo"] = "/home/fritjof/teddypi/data/2017-03-09/MEI_SNP/gene_trees/asb_slo/"
+test_types["tree_SINE_asian"] = "/home/fritjof/teddypi/data/2017-03-09/MEI_SNP/gene_trees/asian/"
+test_types["tree_SINE_asb_amb"] = "/home/fritjof/teddypi/data/2017-03-09/MEI_SNP/gene_trees/asb_amb/"
+test_types["tree_SINE_sun_slo"] = "/home/fritjof/teddypi/data/2017-03-09/MEI_SNP/gene_trees/sun_slo/"
+test_types["tree_SINE_amb_bro"] = "/home/fritjof/teddypi/data/2017-03-09/MEI_SNP/gene_trees/amb_bro/"
+test_types["tree_SINE_amb_pol"] = "/home/fritjof/teddypi/data/2017-03-09/MEI_SNP/gene_trees/amb_pol/"
+test_types["tree_SINE_amb_bro_pol"] = "/home/fritjof/teddypi/data/2017-03-09/MEI_SNP/gene_trees/amb_bro_pol/"
+test_types["tree_SINE_bro_pol"] = "/home/fritjof/teddypi/data/2017-03-09/MEI_SNP/gene_trees/bro_pol/"
+
+
+df_collection <- list()
+for (in_dir in names(test_types)) {
+  df_collection[[in_dir]] <- load_data(test_types[[in_dir]], start_flank, end_flank, end_flank, tree_analysis = TRUE)
+}
+element <- "SINE"
+```
+
+
+3. Plots
+```{r, fig.width=10}
+for (dset in names(df_collection)) {
+  df <- df_collection[[dset]]
+    summarySE(df, measurevar="insSNP",groupvars="flank")
+  
+  p1 <- do.monophyly.histogram(df) + ggtitle(dset)
+  p2 <- do.monophyly.barplot(df)
+  multiplot(p1,p2)
+  
+}
+
+```
+
+
+4. MS plot
+```{r, fig.width=10}
+
+for (dset in names(df_collection)) {
+df <- df_collection[[dset]]
+p <- do.monophyly.barplot.percent(df, title = dset)
+ggsave(paste("~/teddypi/results/MS/Figure5_MEI-SNPanalysis/plot",dset,"revA","pdf", sep="."),plot=p, device="pdf", width=100, height=50, units="mm")
+}
+
+
+df <- df_collection[["tree_SINE_asb_amb"]]
+p2 <- do.monophyly.barplot.percent(df)
+
+multiplot(p1,p2)
+
+
+df <- df_collection[["tree_SINE_sun_asb"]]
+print(do.monophyly.barplot.percent(df))
+
+df <- df_collection[["tree_SINE_slo_asb"]]
+print(do.monophyly.barplot.percent(df))
+
+df <- df_collection[["tree_SINE_sun_slo"]]
+head(df)
+print(do.monophyly.barplot.percent(df))
+print(do.monophyly.vertical.barplot.percent(df))
+
+
+multiplot(p1,p2)
+
+```
