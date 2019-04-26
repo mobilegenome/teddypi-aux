@@ -67,7 +67,7 @@ etc...
 #### Format of matrix file
 
 ```bash
-chr1:10000  sampleA,sampleB
-chr1:20000  sampleA,sampleC
+chr1    10000  10001    sampleA,sampleB
+chr1    20000  20001    sampleA,sampleC
 ...
 
