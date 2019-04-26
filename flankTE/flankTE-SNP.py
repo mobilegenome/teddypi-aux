@@ -89,7 +89,7 @@ def concat_sequences(sequences):
 def identify_SNP_category(column):
     '''
     Identify whether alignment columns contains a species-tree congruent SNP or any alternative?
-    Alterantive possibilites are read from possible_splits (list, defined on top).
+    Alternative possibilities are read from possible_splits (list, defined on top).
     If alternative split does not appear in possible_splits, return "undefined"
     '''
     for cat, splits in {"alternative" : possible_splits, "speciestree": ST_congruent_splits}.iteritems():
@@ -140,11 +140,11 @@ def get_popgen_stats(msa_fname, ins_present):
     return stats
 
 def process_alignment(msa, ins_present):
-    SNPcounter = {"allSNP": 0,
-                  "infSNP": 0,
-                  "othSNP": 0,
-                  "insSNP": 0,
-                  "noSNP": 0,
+    SNPcounter = {"allSNP": 0, # counter for all kinds of SNPs
+                  "infSNP": 0, # counter for informative SNPs
+                  "othSNP": 0, # counter for "other" uncategorized
+                  "insSNP": 0, # counter for insertion-supporting SNPs
+                  "noSNP": 0, # counter for no SNP sites
                   "sptreeSNP": 0,
                   "ursinaeSNP": 0,
                   "uncatSNP": 0,
